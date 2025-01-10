@@ -2,6 +2,8 @@ import User from "../models/user.model.js";
 import { generateToken } from "../lib/utils.js";
 import bcrypt from "bcryptjs";
 import cloudinary from "../lib/cloudinary.js";
+import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
 
 export const register = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -170,6 +172,119 @@ export const checkAuth = (req, res) => {
     res.status(200).json(req.user);
   } catch (error) {
     console.log("Error in checkAuth controller:", error.message);
+    res.status(500).json({ message: "Internal server Error" });
+  }
+};
+
+export const forgetPassword = async (req, res) => {
+  const { email } = req.body;
+  // Validate input fields
+  if (!email) {
+    return res.status(400).json({ message: "Please enter email" });
+  }
+  try {
+    const checkuser = await User.findOne({ email });
+    if (!checkuser) {
+      return res.status(400).json({ message: "User does not exist" });
+    }
+    //generate token
+    const token = generateToken(checkuser._id, res);
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      secure: true,
+      auth: {
+        user: "nitinkanzariya112233@gmail.com",
+        pass: "sptikgksgcuaamom",
+      },
+    });
+
+    const receiver = {
+      from: "realtime.chatapp@gmail.com",
+      to: email,
+      subject: "Reset Password",
+      text: `Click on the link to reset your password: http://localhost:5173/reset-password/${token}`,
+    };
+
+    await transporter.sendMail(receiver);
+
+    res.status(200).json({ message: "Reset password Link Send to your mail" });
+  } catch (error) {
+    console.log("Error in forgetPassword controller:", error.message);
+    res.status(500).json({ message: "Internal server Error" });
+  }
+};
+
+export const  resetPassword = async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  console.log("token",token)
+
+  // Validate input fields
+  if (!password) {
+    return res.status(400).json({ message: "Please enter password" });
+  }
+  if (password.length < 6) {
+    return res
+      .status(400)
+      .json({ message: "Password must be at least 6 characters" });
+  }
+  try {
+    const decode = jwt.verify(token, process.env.JWT_SECRET);
+    if (!decode) return res.status(400).json({ message: "Invalid Token" });
+    
+    const userId = decode.userId;
+
+    // Encrypt password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(password, salt);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        password: hashPassword,
+      },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.log("Error in resetPassword controller:", error.message);
+    res.status(500).json({ message: "Internal server Error" });
+  }
+};
+
+export const changePassword = async (req, res) => {
+  const { email, password: currentPassword, newPassword } = req.body;
+  // Validate input fields
+  if (!email || !currentPassword || !newPassword) {
+    return res.status(400).json({ message: "Please enter all fields" });
+  }
+  if (newPassword.length < 6) {
+    return res
+      .status(400)
+      .json({ message: "Password must be at least 6 characters" });
+  }
+  try {
+    const checkUser = await User.findOne({ email });
+    if (!checkUser) {
+      return res.status(400).json({ message: "User does not exist" });
+    }
+    // Validate password
+    const isMatch = await bcrypt.compare(currentPassword, checkUser.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Password Not Matched" });
+    }
+    // Encrypt password
+    const salt = await bcrypt.genSalt(10);
+    const hashPassword = await bcrypt.hash(newPassword, salt);
+
+    checkUser.password = hashPassword;
+    await checkUser.save();
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.log("Error in changePassword controller:", error.message);
     res.status(500).json({ message: "Internal server Error" });
   }
 };

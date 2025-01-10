@@ -69,6 +69,25 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  forgetPassword: async (data) => {
+    try {
+      const res = await axiosInstance.post("/auth/forget-password", data);
+      toast.success(res.data.message);
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  },
+
+  resetPassword: async (data) => {
+    try {
+      console.log(data);
+      const res = await axiosInstance.post(`/auth/reset-password/${data.token}`, data);
+      toast.success(res.data.message);
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  },
+
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
     try {
@@ -104,4 +123,3 @@ export const useAuthStore = create((set, get) => ({
     if (get().socket?.connected) get().socket.disconnect();
   },
 }));
-

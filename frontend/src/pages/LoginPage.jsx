@@ -87,6 +87,15 @@ const LoginPage = () => {
                   )}
                 </button>
               </div>
+              <div className="flex justify-end mt-3">
+                <Link
+                  to="/forgot-password"
+                  className="text-sm font-medium text-gray-400 hover:text-primary transition-colors flex items-center gap-1"
+                >
+                  <Lock className="w-4 h-4" />
+                  Forgot password ?
+                </Link>
+              </div>
             </div>
 
             <button
