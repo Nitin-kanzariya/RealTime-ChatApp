@@ -15,8 +15,6 @@ const ForgotPassword = () => {
 
     try {
       await forgetPassword({ email });
-        
-      await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulated API call
       setIsSuccess(true);
     } catch (error) {
       console.error("Password reset error:", error);
@@ -83,10 +81,13 @@ const ForgotPassword = () => {
           ) : (
             /* Success Message */
             <div className="space-y-6">
-              <div className="bg-success/10 text-success rounded-lg p-4">
-                Password reset instructions have been sent to your email. Please
-                check your inbox.
-              </div>
+              {isSuccess ? (
+                <div className="bg-success/10 text-success rounded-lg p-4">
+                  Password reset instructions have been sent to your email.
+                  Please check your inbox.
+                </div>
+              ) : null}
+
               <button
                 onClick={() => setIsSuccess(false)}
                 className="btn btn-outline w-full"
@@ -114,6 +115,7 @@ const ForgotPassword = () => {
         <div className="flex flex-col justify-center items-center h-full p-8">
           <div className="max-w-md text-center space-y-4">
             <h2 className="text-2xl font-bold">Reset Your Password</h2>
+
             <p className="text-base-content/60">
               We understand it happens. Reset your password and get back to your
               conversations securely.
