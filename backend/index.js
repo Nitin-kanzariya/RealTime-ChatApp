@@ -11,8 +11,7 @@ import messageRoutes from "./routes/message.route.js";
 
 import { app, server } from "./lib/socket.js";
 
-
-import path from 'path';
+import path from "path";
 
 dotenv.config();
 
@@ -40,6 +39,9 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
+app.get("/", (req, res) => {
+  res.send("Hello World");
+});
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend", "dist")));
