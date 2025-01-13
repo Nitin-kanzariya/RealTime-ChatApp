@@ -203,10 +203,12 @@ export const forgetPassword = async (req, res) => {
       },
     });
 
-    const BASE_URL =
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:5173"
-        : "https://realtime-chatapp-rtvo.onrender.com";
+    // const BASE_URL =
+    //   process.env.NODE_ENV === "development"
+    //     ? "http://localhost:5173"
+    //     : "https://realtime-chatapp-rtvo.onrender.com";
+
+    const BASE_URL = "http://localhost:5173";
 
     const receiver = {
       from: "realtime.chatapp@gmail.com",
