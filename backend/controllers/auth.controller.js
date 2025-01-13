@@ -268,7 +268,9 @@ export const resetPassword = async (req, res) => {
 };
 
 export const changePassword = async (req, res) => {
-  const { email, password: currentPassword, newPassword } = req.body;
+  const { currentPassword, newPassword } = req.body;
+  const email = req.user.email;
+  
   // Validate input fields
   if (!email || !currentPassword || !newPassword) {
     return res.status(400).json({ message: "Please enter all fields" });

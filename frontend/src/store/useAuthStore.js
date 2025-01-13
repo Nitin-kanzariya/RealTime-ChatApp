@@ -82,7 +82,10 @@ export const useAuthStore = create((set, get) => ({
   resetPassword: async (data) => {
     try {
       console.log(data);
-      const res = await axiosInstance.post(`/auth/reset-password/${data.token}`, data);
+      const res = await axiosInstance.post(
+        `/auth/reset-password/${data.token}`,
+        data
+      );
       toast.success(res.data.message);
     } catch (error) {
       toast.error(error.response.data.message);
@@ -92,12 +95,31 @@ export const useAuthStore = create((set, get) => ({
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
     try {
-      const res = await axiosInstance.post("/auth/update-profile", data);
-      set({ authUser: res.data });
-      toast.success("Profile updated successfully");
+      let endpoint = "/auth/update-profile";
+
+      // Change endpoint based on update type
+      if (data.type === "PASSWORD") {
+        endpoint = "/auth/change-password";
+      }
+
+      const res = await axiosInstance.post(endpoint, data);
+
+      // Only update authUser for profile picture changes
+      if (data.type === "PROFILE_PICTURE") {
+        set({ authUser: res.data });
+      }
+
+      toast.success(
+        data.type === "PASSWORD"
+          ? "Password updated successfully"
+          : "Profile updated successfully"
+      );
     } catch (error) {
-      console.log("error in update profile:", error);
-      toast.error(error.response.data.message || "Failed to update profile");
+      console.log(`error in ${data.type.toLowerCase()} update:`, error);
+      toast.error(
+        error.response.data.message ||
+          `Failed to update ${data.type.toLowerCase()}`
+      );
     } finally {
       set({ isUpdatingProfile: false });
     }
