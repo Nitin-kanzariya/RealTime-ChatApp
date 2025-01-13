@@ -187,8 +187,12 @@ export const forgetPassword = async (req, res) => {
     if (!checkuser) {
       return res.status(400).json({ message: "User does not exist" });
     }
-    //generate token
-    const token = generateToken(checkuser._id, res);
+    // Generate a JWT token for password reset
+    const resetToken = jwt.sign(
+      { userId: checkuser._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "30m" } // Token expires in 30 minutes
+    );
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -199,11 +203,16 @@ export const forgetPassword = async (req, res) => {
       },
     });
 
+    const BASE_URL =
+      process.env.NODE_ENV === "development"
+        ? "http://localhost:5173"
+        : "https://realtime-chatapp-rtvo.onrender.com";
+
     const receiver = {
       from: "realtime.chatapp@gmail.com",
       to: email,
       subject: "Reset Password",
-      text: `Click on the link to reset your password: http://localhost:5173/reset-password/${token}`,
+      text: `Click on the link to reset your password: ${BASE_URL}/reset-password/${resetToken}`,
     };
 
     await transporter.sendMail(receiver);
@@ -215,11 +224,11 @@ export const forgetPassword = async (req, res) => {
   }
 };
 
-export const  resetPassword = async (req, res) => {
+export const resetPassword = async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
 
-  console.log("token",token)
+  console.log("token", token);
 
   // Validate input fields
   if (!password) {
@@ -232,8 +241,9 @@ export const  resetPassword = async (req, res) => {
   }
   try {
     const decode = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decode) return res.status(400).json({ message: "Invalid Token" });
-    
+    if (!decode || !decode.userId)
+      return res.status(400).json({ message: "Invalid Token" });
+
     const userId = decode.userId;
 
     // Encrypt password
@@ -247,7 +257,9 @@ export const  resetPassword = async (req, res) => {
       },
       { new: true }
     );
-
+    if (!updatedUser) {
+      return res.status(400).json({ message: "User not found" });
+    }
     res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     console.log("Error in resetPassword controller:", error.message);

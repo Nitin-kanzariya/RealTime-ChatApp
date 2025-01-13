@@ -60,7 +60,7 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="grid lg:grid-cols-2 ">
+    <div className="grid lg:grid-cols-2 h-screen ">
       {/* Left Side - Form */}
       <div className="flex flex-col justify-center items-center p-6 sm:p-12">
         <div className="w-full max-w-md space-y-8">
@@ -193,13 +193,17 @@ const ResetPassword = () => {
           ) : (
             /* Success Message */
             <div className="space-y-6">
-              <div className="bg-success/10 text-success rounded-lg p-4">
-                Your password has been successfully reset. You can now use your
-                new password to log in.
-              </div>
-              <Link to="/login" className="btn btn-primary w-full">
-                Go to Login
-              </Link>
+              {isSuccess ? (
+                <div className="space-y-6">
+                  <div className="bg-success/10 text-success rounded-lg p-4">
+                    Your password has been successfully reset. You can now use
+                    your new password to log in.
+                  </div>
+                  <Link to="/login" className="btn btn-primary w-full">
+                    Go to Login
+                  </Link>
+                </div>
+              ) : null}
             </div>
           )}
 
