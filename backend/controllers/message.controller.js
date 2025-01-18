@@ -17,6 +17,7 @@ export const getUserForSidebar = async (req, res) => {
     res.status(500).json({ message: "Internal server Error" });
   }
 };
+  
 
 export const getMessages = async (req, res) => {
   try {

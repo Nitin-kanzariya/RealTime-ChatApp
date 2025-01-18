@@ -270,7 +270,7 @@ export const resetPassword = async (req, res) => {
 export const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const email = req.user.email;
-  
+
   // Validate input fields
   if (!email || !currentPassword || !newPassword) {
     return res.status(400).json({ message: "Please enter all fields" });
@@ -299,6 +299,49 @@ export const changePassword = async (req, res) => {
     res.status(200).json({ message: "Password changed successfully" });
   } catch (error) {
     console.log("Error in changePassword controller:", error.message);
+    res.status(500).json({ message: "Internal server Error" });
+  }
+};
+
+export const addFriend = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+    const { friendId } = req.body;
+
+    const user = await User.findById(loggedInUserId);
+    const friend = await User.findById(friendId);
+
+    if (!friend) {
+      return res.status(404).json({ message: "Friend not found" });
+    }
+
+    if (user.friends.includes(friendId)) {
+      return res.status(400).json({ message: "Friend already added" });
+    }
+
+    user.friends.push(friendId);
+    await user.save();
+
+    res.status(200).json({ message: "Friend added successfully" });
+  } catch (error) {
+    console.log("Error in addFriend controller:", error.message);
+    res.status(500).json({ message: "Internal server Error" });
+  }
+};
+
+export const getFriends = async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+    const user = await User.findById(loggedInUserId).populate("friends");
+
+    const friendDetails = await User.find(
+      { _id: { $in: user.friends } },
+      { password: 0 } // Exclude password field
+    );
+
+    res.status(200).json(friendDetails);
+  } catch (error) {
+    console.log("Error in getFriends controller:", error.message);
     res.status(500).json({ message: "Internal server Error" });
   }
 };

@@ -15,6 +15,27 @@ export const useAuthStore = create((set, get) => ({
   onlineUsers: [],
   socket: null,
 
+  friends: [],
+
+  addFriend: async (user) => {
+    try {
+      const friendId = user._id;
+      const res = await axiosInstance.post("/auth/add-friend", { friendId });
+      toast.success("Friend added successfully");
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  },
+
+  getFriends: async () => {
+    try {
+      const res = await axiosInstance.get("/auth/friends");
+      set({ friends: res.data });
+    } catch (error) {
+      toast.error(error.response.data.message);
+    }
+  },
+
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check-auth");
